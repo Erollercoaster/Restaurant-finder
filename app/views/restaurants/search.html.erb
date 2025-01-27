@@ -1,0 +1,85 @@
+<div class="flex h-screen bg-gray-100">
+  <!-- Sidebar -->
+  <div class="w-96 bg-white shadow-lg flex flex-col">
+    <!-- Search and Filters Section -->
+    <div class="p-4 border-b">
+      <%= form_with url: restaurants_search_path, method: :get, local: true, class: "space-y-4", id: "search-form" do |form| %>
+        <div>
+          <%= form.label :address, "Enter Address", class: "block text-sm font-medium text-gray-700" %>
+          <div class="mt-1 relative rounded-md shadow-sm">
+            <%= form.text_field :address, required: true,
+              class: "block w-full rounded-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+              placeholder: "Search location..." %>
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-wrap gap-2">
+          <%= form.select :cuisine,
+            options_for_select([
+              ['All Cuisines', ''],
+              ['Italian', 'italian'],
+              ['Japanese', 'japanese'],
+              ['Chinese', 'chinese'],
+              ['American', 'american']
+            ], params[:cuisine]),
+            {},
+            class: "rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+          %>
+
+          <%= form.select :sort_by,
+            options_for_select([
+              ['Sort by', ''],
+              ['Highest Rated', 'rating'],
+              ['Most Reviews', 'reviews'],
+              ['Price (Low to High)', 'price_asc'],
+              ['Price (High to Low)', 'price_desc']
+            ], params[:sort_by]),
+            {},
+            class: "rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+          %>
+
+          <% if user_signed_in? %>
+            <div class="flex items-center">
+              <%= form.check_box :show_favorites, 
+                checked: params[:show_favorites] == 'true', 
+                class: "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded", 
+                id: "show_favorites" 
+              %>
+              <%= form.label :show_favorites, "Show Favorites", class: "ml-2 block text-sm text-gray-900" %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="flex gap-2">
+          <%= form.number_field :radius, value: params[:radius] || 1000,
+            class: "block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+            placeholder: "Radius (m)" %>
+          <%= form.submit "Search",
+            class: "flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Results Section -->
+    <div class="flex-1 overflow-auto" id="resultsList">
+      <!-- Restaurant results will be dynamically inserted here -->
+    </div>
+  </div>
+
+  <!-- Map -->
+  <div class="flex-1">
+    <div id="map" class="h-full w-full"></div>
+  </div>
+</div>
+
+<script>
+  const restaurants = <%= raw @restaurants.to_json(only: [:id, :name, :latitude, :longitude, :address, :place_id, :price_level, :cuisine, :photo_url], methods: [:average_rating, :reviews_count, :is_favorite]) %>;
+</script>
+<%= content_tag :div, @restaurants.to_json.html_safe, id: "restaurants-data", style: "display: none;" %>
+

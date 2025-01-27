@@ -1,0 +1,110 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-4">
+    <%= link_to "Back to Search Results", :back, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+  </div>
+  <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+    <% if @restaurant.photo_url.present? %>
+      <img src="<%= @restaurant.photo_url %>" alt="<%= @restaurant.name %>" class="w-full h-64 object-cover">
+    <% end %>
+    <div class="p-6">
+      <h1 class="text-3xl font-bold mb-2"><%= @restaurant.name %></h1>
+      <p class="text-gray-600 mb-4"><%= @restaurant.address %></p>
+      <div class="flex items-center mb-4">
+        <span class="text-yellow-400 text-2xl"><%= "★" * @restaurant.average_rating.round %><%= "☆" * (5 - @restaurant.average_rating.round) %></span>
+        <span class="ml-2 text-gray-600">(<%= @restaurant.reviews.count %> reviews)</span>
+      </div>
+      <% if @restaurant.price_level.present? %>
+        <p class="text-gray-600 mb-4">Price: <%= @restaurant.price_level %></p>
+      <% end %>
+      <% if @restaurant.cuisine.present? %>
+        <p class="text-gray-600 mb-4">Cuisine: <%= @restaurant.cuisine %></p>
+      <% end %>
+
+      <%= button_to "Toggle Favorite", restaurant_toggle_favorite_path(@restaurant), method: :post, remote: true, class: "favorite-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded", data: { restaurant_id: @restaurant.id } %>
+
+      <h2 class="text-2xl font-bold mt-8 mb-4">Reviews</h2>
+      <% if user_signed_in? %>
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold mb-4">
+            <%= @review&.persisted? ? "Edit Your Review" : "Write a Review" %>
+          </h3>
+          <%= render 'reviews/form', restaurant: @restaurant, review: @review || Review.new %>
+        </div>
+      <% end %>
+
+      <% if @reviews.any? %>
+        <div class="space-y-6" id="reviews-container">
+          <%= render partial: 'reviews/review', collection: @reviews %>
+        </div>
+      <% else %>
+        <p class="text-gray-600">No reviews yet. Be the first to review!</p>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const reviewsContainer = document.getElementById('reviews-container');
+
+  reviewsContainer.addEventListener('click', function(e) {
+    if (e.target.classList.contains('edit-review-btn')) {
+      const reviewId = e.target.dataset.reviewId;
+      const reviewContent = e.target.closest('.border-b').querySelector('.review-content');
+      const editForm = document.getElementById(`edit-form-${reviewId}`);
+      
+      reviewContent.classList.add('hidden');
+      editForm.classList.remove('hidden');
+    }
+
+    if (e.target.classList.contains('cancel-edit-btn')) {
+      const reviewItem = e.target.closest('.border-b');
+      const reviewContent = reviewItem.querySelector('.review-content');
+      const editForm = reviewItem.querySelector('.edit-form');
+      
+      reviewContent.classList.remove('hidden');
+      editForm.classList.add('hidden');
+    }
+  });
+
+  const starRating = document.querySelector('.star-rating');
+  if (starRating) {
+    const stars = starRating.querySelectorAll('.star');
+    const ratingInput = starRating.querySelector('input[type="radio"]:checked');
+    const currentRating = ratingInput ? parseInt(ratingInput.value) : parseInt(starRating.dataset.rating);
+
+    function updateStars(rating) {
+      stars.forEach((star, index) => {
+        if (index < rating) {
+          star.textContent = '★';
+          star.classList.add('text-yellow-400');
+        } else {
+          star.textContent = '☆';
+          star.classList.remove('text-yellow-400');
+        }
+      });
+    }
+
+    updateStars(currentRating);
+
+    stars.forEach((star, index) => {
+      star.addEventListener('mouseenter', () => {
+        updateStars(index + 1);
+      });
+
+      star.addEventListener('mouseleave', () => {
+        updateStars(currentRating);
+      });
+
+      star.addEventListener('click', () => {
+        const rating = index + 1;
+        const ratingInput = starRating.querySelector(`input[value="${rating}"]`);
+        ratingInput.checked = true;
+        currentRating = rating;
+        updateStars(rating);
+      });
+    });
+  }
+});
+</script>
+

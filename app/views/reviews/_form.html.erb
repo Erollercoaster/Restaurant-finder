@@ -1,0 +1,30 @@
+<%= form_with(model: [restaurant, review], local: true, class: "space-y-4") do |form| %>
+  <% if review.errors.any? %>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+      <strong class="font-bold">Error:</strong>
+      <span class="block sm:inline"><%= review.errors.full_messages.to_sentence %></span>
+    </div>
+  <% end %>
+
+  <div class="star-rating" data-rating="<%= review.rating || 0 %>">
+    <% 5.times do |i| %>
+      <%= form.radio_button :rating, i + 1, class: "hidden" %>
+      <%= form.label :rating, value: i + 1, class: "star cursor-pointer text-3xl" do %>
+        ☆
+      <% end %>
+    <% end %>
+  </div>
+
+  <div>
+    <%= form.label :comment, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.text_area :comment, rows: 4, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
+  </div>
+
+  <div>
+    <%= form.submit review.persisted? ? "Update Review" : "Submit Review", class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+    <% if review.persisted? %>
+      <%= link_to "Cancel", restaurant_path(restaurant), class: "ml-2 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+    <% end %>
+  </div>
+<% end %>
+
