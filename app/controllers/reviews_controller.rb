@@ -9,8 +9,10 @@ class ReviewsController < ApplicationController
 
     if @review.save
       @restaurant.update_ratings_data
-      redirect_to @restaurant, notice: 'Review was successfully created.'
+      flash[:notice] = "Your review has been successfully posted."
+      redirect_to @restaurant
     else
+      flash.now[:alert] = "There was an error posting your review: #{@review.errors.full_messages.to_sentence}"
       @reviews = @restaurant.reviews.includes(:user).order(created_at: :desc)
       render 'restaurants/show'
     end
@@ -24,8 +26,10 @@ class ReviewsController < ApplicationController
   def update
     if @review.update(review_params)
       @restaurant.update_ratings_data
-      redirect_to @restaurant, notice: 'Review was successfully updated.'
+      flash[:notice] = "Your review has been successfully updated."
+      redirect_to @restaurant
     else
+      flash.now[:alert] = "There was an error updating your review: #{@review.errors.full_messages.to_sentence}"
       @reviews = @restaurant.reviews.includes(:user).order(created_at: :desc)
       render 'restaurants/show'
     end
@@ -34,7 +38,8 @@ class ReviewsController < ApplicationController
   def destroy
     @review.destroy
     @restaurant.update_ratings_data
-    redirect_to @restaurant, notice: 'Review was successfully deleted.'
+    flash[:notice] = "Your review has been successfully deleted."
+    redirect_to @restaurant
   end
 
   private

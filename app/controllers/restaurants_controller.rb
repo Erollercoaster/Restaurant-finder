@@ -19,7 +19,7 @@ class RestaurantsController < ApplicationController
     Rails.logger.debug "Search params: address=#{address}, radius=#{radius}, max_results=#{max_results}, cuisine=#{cuisine}, sort_by=#{sort_by}, show_favorites=#{show_favorites}"
   
     if address.blank?
-      flash.now[:alert] = "Address is required"
+      flash.now[:alert] = "Address is required for the search."
       return render :search
     end
   
@@ -30,7 +30,7 @@ class RestaurantsController < ApplicationController
     Rails.logger.debug "Geocoded location: #{location.inspect}"
   
     if location[:error]
-      flash.now[:alert] = location[:error]
+      flash.now[:alert] = "Unable to find the specified address. Please try again."
       return render :search
     end
   
@@ -76,14 +76,16 @@ class RestaurantsController < ApplicationController
           restaurant_hash['reviews_count'] = restaurant.reviews.count
           restaurant_hash
         end
+
+        flash.now[:notice] = "Found #{@restaurants.count} restaurants matching your criteria."
       else
-        flash.now[:notice] = "No restaurants found for the specified location"
+        flash.now[:notice] = "No restaurants found for the specified location and criteria."
         @restaurants = []
       end
     rescue StandardError => e
       Rails.logger.error("Restaurant Search Error: #{e.message}")
       Rails.logger.error(e.backtrace.join("\n"))
-      flash.now[:alert] = "An error occurred while searching for restaurants"
+      flash.now[:alert] = "An error occurred while searching for restaurants. Please try again later."
       @restaurants = []
     end
   

@@ -1,6 +1,6 @@
 class FavoritesController < ApplicationController
-  before_action :set_restaurant
   before_action :authenticate_user!
+  before_action :set_restaurant
 
   def toggle
     favorite = current_user.favorites.find_or_initialize_by(restaurant: @restaurant)
@@ -9,19 +9,29 @@ class FavoritesController < ApplicationController
       ActiveRecord::Base.transaction do
         if favorite.persisted?
           favorite.destroy
-          is_favorite = false
+          flash[:notice] = "Restaurant removed from favorites."
         else
-          favorite.user_likes_restaurant = true
           favorite.save!
-          is_favorite = true
+          flash[:notice] = "Restaurant added to favorites."
         end
       end
 
-      render json: { status: is_favorite ? 'favorited' : 'unfavorited', is_favorite: is_favorite }
+      respond_to do |format|
+        format.html { redirect_to @restaurant }
+        format.json { render json: { status: favorite.persisted? ? 'favorited' : 'unfavorited', is_favorite: favorite.persisted? } }
+      end
     rescue ActiveRecord::RecordInvalid => e
-      render json: { error: e.message }, status: :unprocessable_entity
+      flash[:alert] = "Unable to update favorites: #{e.message}"
+      respond_to do |format|
+        format.html { redirect_to @restaurant }
+        format.json { render json: { error: e.message }, status: :unprocessable_entity }
+      end
     rescue StandardError => e
-      render json: { error: 'An unexpected error occurred' }, status: :internal_server_error
+      flash[:alert] = "An unexpected error occurred while updating favorites."
+      respond_to do |format|
+        format.html { redirect_to @restaurant }
+        format.json { render json: { error: 'An unexpected error occurred' }, status: :internal_server_error }
+      end
     end
   end
 

@@ -2,21 +2,31 @@
 <html>
   <head>
     <title><%= content_for(:title) || "Resto Finder" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-  <body>
-      <% unless devise_controller? %>
-          <% if current_user.present? %>
-            <%= render 'layouts/navbar' %>
-          <% end %>
+
+  <body class="bg-gray-100">
+    <% flash.each do |type, message| %>
+      <div class="flash-message <%= type %>" data-controller="flash">
+        <%= message %>
+        <button data-action="click->flash#dismiss">&times;</button>
+      </div>
+    <% end %>
+
+    <% unless devise_controller? %>
+      <% if current_user.present? %>
+        <%= render 'layouts/navbar' %>
       <% end %>
-      
+    <% end %>
+
+    <main>
       <%= yield %>
-    </div>
+    </main>
 
     <script 
       src="https://maps.googleapis.com/maps/api/js?key=<%= ENV['GOOGLE_PLACES_API_KEY'] %>&callback=initMap" 
@@ -25,3 +35,4 @@
     </script>
   </body>
 </html>
+

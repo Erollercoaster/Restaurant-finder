@@ -13,3 +13,34 @@
  *= require_tree .
  *= require_self
  */
+
+ .flash-message {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .flash-message.notice {
+    background-color: #e3f2fd;
+    color: #0d47a1;
+  }
+  
+  .flash-message.alert {
+    background-color: #ffebee;
+    color: #b71c1c;
+  }
+  
+  .flash-message button {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.25rem;
+    cursor: pointer;
+  }
+  
