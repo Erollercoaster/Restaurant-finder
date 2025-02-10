@@ -80,6 +80,4 @@ test:
 #
 production:
   <<: *default
-  database: resto_finder_production
-  username: resto_finder
-  password: <%= ENV["RESTO_FINDER_DATABASE_PASSWORD"] %>
+  url: <%= ENV["DATABASE_URL"] %>
